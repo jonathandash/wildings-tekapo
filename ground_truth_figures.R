@@ -4,10 +4,12 @@ library(here)
 library(tidyverse)
 library(knitr)
 library(ggjoy)
+library(ggExtra)
+library(gridExtra)
 
 
 
-df<-read.csv(here('data', 'FieldMaster.csv'))
+df<-read.csv(here('data', 'FieldMaster.csv'), stringsAsFactors = FALSE)
 
 paste('In the field data dataframe there are ', nrow(df), ' records', sep= '')
 
@@ -40,12 +42,23 @@ df %>% filter(Northing <5160000) %>%
   theme_bw() +
   scale_colour_viridis_c()
 
-df %>% filter(Northing <5160000,
+# First panel should show the distribution of the trees
+
+t1<-df %>% filter(Northing <5160000,
               spp %in% c('pp','ps')) %>%
-  ggplot(aes(y=Northing, x=Easting, colour=as.factor(spp))) +
-  geom_point(alpha=0.2) +
+  mutate(spp=replace(spp, spp=='pp', 'P. pon'),
+         spp=replace(spp, spp=='ps', 'P. syl')) %>%
+  ggplot(aes(y=Northing, x=Easting, shape=as.factor(spp))) +
+  geom_point(alpha=0.5, aes(col = H)) +
   theme_bw() +
-  scale_colour_viridis_d()
+  scale_colour_viridis_c() +
+  #scale_colour_brewer(palette = 'Accent') +
+  theme(legend.position="bottom",
+        axis.text.x=element_blank(),
+        axis.text.y=element_blank()) +
+  labs(shape = 'Species', col='Height')
+  
+
 
 
 df %>% mutate(CW = (dia1 + dia2)/2) %>%
@@ -85,7 +98,53 @@ df %>% filter(Northing <5160000,
   theme(legend.position="none")
 
 
+#Maybe second panel should dhow the relationship between crown width and height
 
+t2<-df %>% filter(Northing <5160000,
+              spp %in% c('ps', 'pp')) %>%
+  mutate(spp=replace(spp, spp=='pp', 'P. ponderosa'),
+         spp=replace(spp, spp=='ps', 'P. sylvestris')) %>%
+  ggplot(aes(y=H, x = (dia1 + dia2)/2)) +
+  #stat_binhex() +
+  geom_jitter(alpha=0.8, colour='grey', size=0.2)  +
+  #geom_density_2d(col = 'red') +  
+  stat_density2d(aes(fill = ..level..),n = 100,contour = TRUE,geom = "polygon", alpha=0.2) +
+  scale_fill_viridis_c(name = 'Density') +
+  #scale_colour_brewer(palette = 'Accent') +
+  labs(x='Crown Width (cm)', y='Height (cm)', colour='Species') +
+  #geom_smooth(aes(col=spp), method = 'lm', se=F) +
+  theme_bw() +
+  facet_wrap(spp~.) +
+  theme(legend.position="bottom")
+
+
+
+# Third panel should include coning size
+
+t3<-df %>% filter(
+              spp == 'ps') %>%
+  mutate(coning=replace(coning, coning=='Y', 'y'),
+         coning=replace(coning, coning=='N', 'n')) %>%
+  ggplot(aes(x = coning, y=H)) +
+  geom_violin (fill = 'lightgreen') + 
+  labs(y = 'Height (cm)') +
+  theme_bw()
+
+df %>% filter(
+  spp == 'ps') %>%
+  mutate(coning=replace(coning, coning=='Y', 'y'),
+         coning=replace(coning, coning=='N', 'n')) %>%
+  group_by(coning) %>%
+  summarise(ht = mean(H),
+            mht = min(H),
+            cwt = mean(CW),
+            mcwt = min(CW))
+
+
+
+png(here('out','Figure2.png'), width = 17, height =17, units='cm', res=500)
+grid.arrange(t1,t2, nrow = 2)
+dev.off()
 
 
 
@@ -111,6 +170,8 @@ layout(matrix(1:2, nrow = 1))
 plot(P, main='', xlab= 'Height (cm)', ylab='Density')
 plot(Q, main='', xlab= 'Crown Width (cm)', ylab='Density')
 dev.off()
+
+
 
 
 

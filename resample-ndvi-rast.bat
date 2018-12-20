@@ -1,0 +1,10 @@
+gdalwarp -tr 1 1 -r average uav-ndvi-rast.tif uav-ndvi-1.tif
+gdalwarp -tr 2 2 -r average uav-ndvi-rast.tif uav-ndvi-2.tif
+gdalwarp -tr 3 3 -r average uav-ndvi-rast.tif uav-ndvi-3.tif
+gdalwarp -tr 4 4 -r average uav-ndvi-rast.tif uav-ndvi-4.tif
+gdalwarp -tr 5 5 -r average uav-ndvi-rast.tif uav-ndvi-5.tif
+gdalwarp -tr 6 6 -r average uav-ndvi-rast.tif uav-ndvi-6.tif
+gdalwarp -tr 7 7 -r average uav-ndvi-rast.tif uav-ndvi-7.tif
+gdalwarp -tr 8 8 -r average uav-ndvi-rast.tif uav-ndvi-8.tif
+gdalwarp -tr 9 9 -r average uav-ndvi-rast.tif uav-ndvi-9.tif
+gdalwarp -tr 10 10 -r average uav-ndvi-rast.tif uav-ndvi-10.tif
